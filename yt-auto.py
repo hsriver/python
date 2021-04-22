@@ -35,36 +35,89 @@ DRIVER_PATH = '/Users/takum/Selenium/chromedriver'
 # ブラウザの起動
 driver = webdriver.Chrome(executable_path=DRIVER_PATH, chrome_options=options)
 
+#
+# 3つの変数を入力
+# 1. URL (&t=...のない形で)
+# 2. 再生開始時間
+# 3. 再生終了時間
+# 
+
+url = 'https://www.youtube.com/watch?v=5GiSc6BdWTE&t=2427s'
+StartTime = '20:10'
+EndTime = '20:20'
+
+url = url + '&t=' + calcStartTime + 's'
+
+# 再生開始時間を計算(URLに渡すパラメータ)
+def calcStartTime(StartTime):
+    StartTime = StartTime.split(':', StartTime)
+    StartMin = int(StartTime[0])
+    StartSec = int(StartTime[1])
+    t = 60 * StartMin + StartSec
+
+    return t
+
+
+# 再生時間 (=プログラムの休止時間) を計算
+# 入力された再生時間 + 1秒とする
+def calcPlayTime(StartTime, EndTime):
+    StartTime = StartTime.split(':', StartTime)
+    StartMin = int(StartTime[0])
+    StartSec = int(StartTime[1])
+
+    EndTime = EndTime.split(':', EndTime)
+    EndMin = int(EndTime[0])
+    EndSec = int(EndTime[1])
+
+    MinCount = EndMin - StartMin #再生時間(分)
+    SecCount = EndSec - StartSec #再生時間(秒)
+
+    # n分m秒に変換, (0 <= m <= 59になるように)
+    if (SecCount < 0):
+        MinCount = MinCount - 1
+        SecCount = 60 - SecCount
+
+    return 60 * MinCount + SecCount + 1
+
+# 再生終了か判定
+def whetherToFinish(EndTime, min, sec):
+    EndTime = EndTime.split(':', EndTime)
+    EndMin = int(EndTime[0])
+    EndSec = int(EndTime[1])
+
+    if min >= EndMin and sec >= EndSec:
+        return True
+    return False
+
 # 動画にアクセスする
 while True:
     # urlの指定
-    url = 'https://www.youtube.com/watch?v=5GiSc6BdWTE&t=2427s'
     driver.get(url)
 
-    time.sleep(5)
+    # 再生時間 (=プログラムの休止時間) を指定
+    playTime = calcPlayTime(StartTime, EndTime)
+    time.sleep(playTime)
+
     while True:
-        #ホバーしてタイマーを表示させる
-        driver_action = ActionChains(driver)
-        driver_action.move_to_element(driver.find_element_by_xpath('//*[@id="movie_player"]')).perform()
+        #ホバーしてタイマーを表示させる ※このへん渋い
+        actions = ActionChains(driver)
+        targetFrom = driver.find_element_by_xpath('//*[@id="movie_player"]/div[1]/video')
+        targetTo = driver.find_element_by_xpath('//*[@id="search"]')
+        actions.click_and_hold(targetFrom)
+        actions.move_to_element(targetTo)
+        actions.perform()
 
         #時間を取得
         selector = 'ytp-time-current'
         currentTime = driver.find_element_by_class_name(selector).text
         currentTime = currentTime.split(':')
-        print(currentTime)
-        print(currentTime[0])
-        print(currentTime[1])
-        #min = int(currentTime[0])
-        #sec = int(currentTime[1])
+        min = int(currentTime[0])
+        sec = int(currentTime[1])
 
-        #print(min + " and ")
-        #print(sec)
-
-        # if min >= 44 and sec >= 40:
-            # break
-
-        # time.sleep(2)
-        break
+        # 再生終了か判定
+        if (whetherToFinish == True):
+            break
+        time.sleep(3)
 
 
 
