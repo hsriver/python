@@ -42,32 +42,34 @@ driver = webdriver.Chrome(executable_path=DRIVER_PATH, chrome_options=options)
 # 3. 再生終了時間
 # 
 
-url = 'https://www.youtube.com/watch?v=5GiSc6BdWTE&t=2427s'
-StartTime = '20:10'
-EndTime = '20:20'
-
-url = url + '&t=' + calcStartTime + 's'
+# url = 'https://www.youtube.com/watch?v=5GiSc6BdWTE&t=2427s'
+url = 'https://www.youtube.com/watch?v=5GiSc6BdWTE'
+StartTime = '40:27'
+EndTime = '40:40'
 
 # 再生開始時間を計算(URLに渡すパラメータ)
 def calcStartTime(StartTime):
-    StartTime = StartTime.split(':', StartTime)
-    StartMin = int(StartTime[0])
-    StartSec = int(StartTime[1])
-    t = 60 * StartMin + StartSec
+    StartMin, StartSec = StartTime.split(':')
+    t = 60 * int(StartMin) + int(StartSec)
 
     return t
+
+param = calcStartTime(StartTime)
+url = url + '&t=' + str(param) + 's'
+
+print("aaaaa")
+print(url)
+print("aaaaa")
+print(param)
+
 
 
 # 再生時間 (=プログラムの休止時間) を計算
 # 入力された再生時間 + 1秒とする
 def calcPlayTime(StartTime, EndTime):
-    StartTime = StartTime.split(':', StartTime)
-    StartMin = int(StartTime[0])
-    StartSec = int(StartTime[1])
+    StartMin, StartSec = StartTime.split(':')
 
-    EndTime = EndTime.split(':', EndTime)
-    EndMin = int(EndTime[0])
-    EndSec = int(EndTime[1])
+    EndMin, EndSec = EndTime.split(':')
 
     MinCount = EndMin - StartMin #再生時間(分)
     SecCount = EndSec - StartSec #再生時間(秒)
@@ -81,9 +83,7 @@ def calcPlayTime(StartTime, EndTime):
 
 # 再生終了か判定
 def whetherToFinish(EndTime, min, sec):
-    EndTime = EndTime.split(':', EndTime)
-    EndMin = int(EndTime[0])
-    EndSec = int(EndTime[1])
+    EndMin, EndSec = EndTime.split(':')
 
     if min >= EndMin and sec >= EndSec:
         return True
@@ -115,11 +115,7 @@ while True:
         sec = int(currentTime[1])
 
         # 再生終了か判定
-        if (whetherToFinish == True):
+        if (whetherToFinish(EndTime, min, sec) == True):
             break
         time.sleep(3)
-
-
-
-
 
