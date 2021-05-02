@@ -45,7 +45,7 @@ driver = webdriver.Chrome(executable_path=DRIVER_PATH, chrome_options=options)
 # url = 'https://www.youtube.com/watch?v=5GiSc6BdWTE&t=2427s'
 url = 'https://www.youtube.com/watch?v=5GiSc6BdWTE'
 StartTime = '40:27'
-EndTime = '40:40'
+EndTime = '44:40'
 
 # 再生開始時間を計算(URLに渡すパラメータ)
 def calcStartTime(StartTime):
@@ -57,13 +57,6 @@ def calcStartTime(StartTime):
 param = calcStartTime(StartTime)
 url = url + '&t=' + str(param) + 's'
 
-print("aaaaa")
-print(url)
-print("aaaaa")
-print(param)
-
-
-
 # 再生時間 (=プログラムの休止時間) を計算
 # 入力された再生時間 + 1秒とする
 def calcPlayTime(StartTime, EndTime):
@@ -71,8 +64,8 @@ def calcPlayTime(StartTime, EndTime):
 
     EndMin, EndSec = EndTime.split(':')
 
-    MinCount = EndMin - StartMin #再生時間(分)
-    SecCount = EndSec - StartSec #再生時間(秒)
+    MinCount = int(EndMin) - int(StartMin) #再生時間(分)
+    SecCount = int(EndSec) - int(StartSec) #再生時間(秒)
 
     # n分m秒に変換, (0 <= m <= 59になるように)
     if (SecCount < 0):
@@ -85,7 +78,7 @@ def calcPlayTime(StartTime, EndTime):
 def whetherToFinish(EndTime, min, sec):
     EndMin, EndSec = EndTime.split(':')
 
-    if min >= EndMin and sec >= EndSec:
+    if min >= int(EndMin) and sec >= int(EndSec):
         return True
     return False
 
@@ -95,6 +88,7 @@ while True:
     driver.get(url)
 
     # 再生時間 (=プログラムの休止時間) を指定
+
     playTime = calcPlayTime(StartTime, EndTime)
     time.sleep(playTime)
 
