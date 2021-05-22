@@ -42,54 +42,60 @@ driver = webdriver.Chrome(executable_path=DRIVER_PATH, chrome_options=options)
 # 3. 再生終了時間
 # 
 
-# url = 'https://www.youtube.com/watch?v=5GiSc6BdWTE&t=2427s'
-url = 'https://www.youtube.com/watch?v=5GiSc6BdWTE'
-StartTime = '40:27'
-EndTime = '44:40'
+url = 'https://www.youtube.com/watch?v=TZDJ3b2EAyc'
+StartTime = '57:50'
+EndTime = '58:00'
+
+# xx:xx:xx形式の時間をxxxsecに変換
+def timeToSec(time) -> int:
+    time = time.split(':')
+    if len(time) == 3:
+        h, m, s = time[0], time[1], time[2]
+    elif len(time) == 2:
+        h, m, s = 0, time[0], time[1]
+    return h, m, s
 
 # 再生開始時間を計算(URLに渡すパラメータ)
-def calcStartTime(StartTime):
-    StartMin, StartSec = StartTime.split(':')
-    t = 60 * int(StartMin) + int(StartSec)
+def calcStartTime() -> int:
+    h, m, s = timeToSec(StartTime)
+    t = 60 * 60 * int(h) + 60 * int(m) + int(s)
 
     return t
 
-param = calcStartTime(StartTime)
-url = url + '&t=' + str(param) + 's'
-
 # 再生時間 (=プログラムの休止時間) を計算
 # 入力された再生時間 + 1秒とする
-def calcPlayTime(StartTime, EndTime):
-    StartMin, StartSec = StartTime.split(':')
+def calcPlayTime() -> int:
+    h, m, s = timeToSec(StartTime)
+    startSec = 60 * 60 * int(h) + 60 * int(m) + int(s)
 
-    EndMin, EndSec = EndTime.split(':')
+    h, m, s = timeToSec(EndTime)
+    endSec = 60 * 60 * int(h) + 60 * int(m) + int(s)
 
-    MinCount = int(EndMin) - int(StartMin) #再生時間(分)
-    SecCount = int(EndSec) - int(StartSec) #再生時間(秒)
+    return endSec - startSec + 1
 
-    # n分m秒に変換, (0 <= m <= 59になるように)
-    if (SecCount < 0):
-        MinCount = MinCount - 1
-        SecCount = 60 - SecCount
-
-    return 60 * MinCount + SecCount + 1
+# 現在の秒数を取得
+def getCurrentSec(EndTime):
+    currentSec = timeToSec(EndTime)
+    return currentSec
 
 # 再生終了か判定
-def whetherToFinish(EndTime, min, sec):
-    EndMin, EndSec = EndTime.split(':')
-
-    if min >= int(EndMin) and sec >= int(EndSec):
+def whetherToFinish(currentTime, EndTime):
+    currentSec = timeToSec(currentTime)
+    endSec = timeToSec(EndTime)
+    if currentSec > endSec:
         return True
     return False
 
-# 動画にアクセスする
+# ここからメイン処理
+param = calcStartTime()
+url = url + '&t=' + str(param) + 's'
 while True:
     # urlの指定
     driver.get(url)
 
     # 再生時間 (=プログラムの休止時間) を指定
 
-    playTime = calcPlayTime(StartTime, EndTime)
+    playTime = calcPlayTime()
     time.sleep(playTime)
 
     while True:
@@ -104,12 +110,9 @@ while True:
         #時間を取得
         selector = 'ytp-time-current'
         currentTime = driver.find_element_by_class_name(selector).text
-        currentTime = currentTime.split(':')
-        min = int(currentTime[0])
-        sec = int(currentTime[1])
 
         # 再生終了か判定
-        if (whetherToFinish(EndTime, min, sec) == True):
+        if (whetherToFinish(currentTime ,EndTime) == True):
             break
         time.sleep(3)
 
